@@ -3,7 +3,8 @@ dotenv.config();
 import express from "express";
 import connectDB from "./config/db.js";
 import mongoose from "mongoose";
-import chatRoutes from "./routes/chatRoutes.js"
+import chatRoutes from "./routes/chatRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 connectDB();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 
 app.use("/api/chat", chatRoutes);
+app.use("/api/auth", authRoutes);
 
 // Add Basic Health Route
 app.get("/api/health", (req, res) => {
