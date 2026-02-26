@@ -1,12 +1,11 @@
-import OpenAI from "openai";
 import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import connectDB from "./config/db.js";
 import mongoose from "mongoose";
 import chatRoutes from "./routes/chatRoutes.js"
 
 connectDB();
-dotenv.config();
 
 const app = express();
 app.use(express.json());
