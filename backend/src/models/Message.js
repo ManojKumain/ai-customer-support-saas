@@ -2,11 +2,6 @@ import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
     role: {
       type: String,
       enum: ["user", "assistant"],
@@ -16,8 +11,16 @@ const messageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    conversation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Conversation",
+      required: true,
+    },
   },
   { timestamps: true }
 );
+
+// Index for fast conversation message retrieval
+messageSchema.index({ conversation: 1, createdAt: 1 });
 
 export default mongoose.model("Message", messageSchema);
