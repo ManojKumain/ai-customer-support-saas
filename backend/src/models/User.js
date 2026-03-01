@@ -25,6 +25,15 @@ const userSchema = new mongoose.Schema(
             enum: ["user", "admin"],
             default: "user",
         },
+        usageCount: {
+            type: Number,
+            default: 0
+        },
+        usageResetDate: {
+            type: Date,
+            default: () => new Date()
+        }
+
     },
     { timestamps: true }
 );

@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import mongoose from "mongoose";
 import chatRoutes from "./routes/chatRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import rateLimit from "express-rate-limit";
 
 connectDB();
 
