@@ -21,7 +21,7 @@ export default function Login() {
       const { token } = res.data;
 
       localStorage.setItem("token", token);
-      navigate("/chat");
+      window.location.href = "/chat";
     } catch (err) {
       console.error("Axios error:", err.response);
       setError(err.response?.data?.message || "Login failed");
