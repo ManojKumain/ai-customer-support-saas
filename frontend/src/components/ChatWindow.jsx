@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api/axios";
 
-export default function ChatWindow({ selectedConv, setConversations }) {
+export default function ChatWindow({
+  selectedConv,
+  setSelectedConv,
+  setConversations,
+}) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
-  const sendMessage = async () => {
+  // Clear messages when switching to a new chat
+  useEffect(() => {
     if (!selectedConv) {
-      const updated = await api.get("/chat");
-      setConversations(updated.data.conversations);
+      setMessages([]);
     }
+  }, [selectedConv]);
+
+  const sendMessage = async () => {
     if (!message.trim()) return;
 
     try {
@@ -18,15 +25,30 @@ export default function ChatWindow({ selectedConv, setConversations }) {
         conversationId: selectedConv?._id,
       });
 
-      const newMessage = {
-        role: "assistant",
-        content: res.data.reply,
-      };
+      const newConversationId = res.data.conversationId;
 
+      // If this was a new chat (no conversation selected before)
+      if (!selectedConv) {
+        // Fetch updated conversation list
+        const updated = await api.get("/chat");
+        setConversations(updated.data.conversations);
+
+        // Find the newly created conversation
+        const newConv = updated.data.conversations.find(
+          (conv) => conv._id === newConversationId
+        );
+
+        // Auto-select it
+        if (newConv) {
+          setSelectedConv(newConv);
+        }
+      }
+
+      // Update messages in UI
       setMessages((prev) => [
         ...prev,
         { role: "user", content: message },
-        newMessage,
+        { role: "assistant", content: res.data.reply },
       ]);
 
       setMessage("");

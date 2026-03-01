@@ -33,6 +33,7 @@ export default function ChatPage() {
       <ChatWindow
         selectedConv={selectedConv}
         setConversations={setConversations}
+        setSelectedConv={setSelectedConv}
       />
     </div>
   );
