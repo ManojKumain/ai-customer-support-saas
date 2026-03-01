@@ -132,4 +132,44 @@ const deleteConversation = async (req, res) => {
   }
 };
 
-export { chatHandler, deleteConversation };
+const renameConversation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title } = req.body;
+
+    if (!title || typeof title !== "string") {
+      return res.status(400).json({ error: "Valid title is required" });
+    }
+
+
+
+    const updatedConversation = await Conversation.findOneAndUpdate(
+      {
+        _id: id,
+        user: req.user._id,
+        isDeleted: false,
+      },
+      {
+        title: title.trim(),
+      },
+      { new: true }
+    );
+
+
+
+    if (!updatedConversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+
+    res.status(200).json({
+      message: "Conversation renamed successfully",
+      conversation: updatedConversation,
+    });
+
+  } catch (error) {
+    console.error("Rename Conversation Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export { chatHandler, deleteConversation, renameConversation };
