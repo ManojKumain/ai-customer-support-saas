@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import api from "../api/axios";
 
 export default function ChatWindow({
@@ -8,6 +8,8 @@ export default function ChatWindow({
 }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef(null);
 
   // Clear messages when switching to a new chat
   useEffect(() => {
@@ -32,8 +34,15 @@ export default function ChatWindow({
     fetchMessages();
   }, [selectedConv]);
 
+  // Auto-scroll whenever messages change
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const sendMessage = async () => {
     if (!message.trim()) return;
+
+    setLoading(true);
 
     try {
       const res = await api.post("/chat", {
@@ -43,24 +52,19 @@ export default function ChatWindow({
 
       const newConversationId = res.data.conversationId;
 
-      // If this was a new chat (no conversation selected before)
       if (!selectedConv) {
-        // Fetch updated conversation list
         const updated = await api.get("/chat");
         setConversations(updated.data.conversations);
 
-        // Find the newly created conversation
         const newConv = updated.data.conversations.find(
           (conv) => conv._id === newConversationId
         );
 
-        // Auto-select it
         if (newConv) {
           setSelectedConv(newConv);
         }
       }
 
-      // Update messages in UI
       setMessages((prev) => [
         ...prev,
         { role: "user", content: message },
@@ -70,6 +74,8 @@ export default function ChatWindow({
       setMessage("");
     } catch (error) {
       console.error(error.response || error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,6 +94,9 @@ export default function ChatWindow({
             {msg.content}
           </div>
         ))}
+
+        {/* 🔽 Auto-scroll anchor */}
+        <div ref={bottomRef}></div>
       </div>
 
       <div className="p-4 border-t flex gap-2">
@@ -100,9 +109,10 @@ export default function ChatWindow({
         />
         <button
           onClick={sendMessage}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          disabled={loading}
+          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
         >
-          Send
+          {loading ? "Thinking..." : "Send"}
         </button>
       </div>
     </div>
