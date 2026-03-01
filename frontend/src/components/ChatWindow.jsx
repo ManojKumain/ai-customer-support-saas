@@ -16,6 +16,22 @@ export default function ChatWindow({
     }
   }, [selectedConv]);
 
+  // Load messages when selecting a conversation
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!selectedConv?._id) return;
+
+      try {
+        const res = await api.get(`/chat/${selectedConv._id}/messages`);
+        setMessages(res.data.messages);
+      } catch (error) {
+        console.error("Failed to load messages:", error);
+      }
+    };
+
+    fetchMessages();
+  }, [selectedConv]);
+
   const sendMessage = async () => {
     if (!message.trim()) return;
 
