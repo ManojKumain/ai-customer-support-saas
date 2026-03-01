@@ -172,4 +172,41 @@ const renameConversation = async (req, res) => {
   }
 };
 
-export { chatHandler, deleteConversation, renameConversation };
+const getUserConversations = async (req, res) => {
+  try {
+    // 1️⃣ Read query params
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+
+    const skip = (page - 1) * limit;
+
+    // 2️⃣ Fetch paginated conversations
+    const conversations = await Conversation.find({
+      user: req.user._id,
+      isDeleted: false,
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // 3️⃣ Get total count for pagination metadata
+    const total = await Conversation.countDocuments({
+      user: req.user._id,
+      isDeleted: false,
+    });
+
+    // 4️⃣ Send structured response
+    res.status(200).json({
+      conversations,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalConversations: total,
+    });
+
+  } catch (error) {
+    console.error("Fetch Conversations Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export { chatHandler, deleteConversation, renameConversation, getUserConversations };
