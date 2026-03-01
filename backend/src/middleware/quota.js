@@ -1,4 +1,4 @@
-const User = require("../models/User");
+import User from "../models/User.js";  // assuming User.js is ESM
 
 const MONTHLY_LIMIT = 100;
 
@@ -9,11 +9,9 @@ const quota = async (req, res, next) => {
     const now = new Date();
     const resetDate = new Date(user.usageResetDate);
 
-    // Add one month to resetDate
     const nextResetDate = new Date(resetDate);
     nextResetDate.setMonth(nextResetDate.getMonth() + 1);
 
-    // If current date is past next reset date
     if (now > nextResetDate) {
       user.usageCount = 0;
       user.usageResetDate = now;
@@ -21,9 +19,7 @@ const quota = async (req, res, next) => {
     }
 
     if (user.usageCount >= MONTHLY_LIMIT) {
-      return res.status(403).json({
-        message: "Monthly quota exceeded"
-      });
+      return res.status(403).json({ message: "Monthly quota exceeded" });
     }
 
     next();
@@ -33,4 +29,4 @@ const quota = async (req, res, next) => {
   }
 };
 
-module.exports = quota;
+export default quota;

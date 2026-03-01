@@ -209,4 +209,30 @@ const getUserConversations = async (req, res) => {
   }
 };
 
-export { chatHandler, deleteConversation, renameConversation, getUserConversations };
+const getConversationMessages = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const conversation = await Conversation.findOne({
+      _id: id,
+      user: req.user._id,
+      isDeleted: false,
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+
+    const messages = await Message.find({
+      conversation: id,
+    }).sort({ createdAt: 1 });
+
+    res.status(200).json({ messages });
+
+  } catch (error) {
+    console.error("Fetch Messages Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export { chatHandler, deleteConversation, renameConversation, getUserConversations, getConversationMessages };
