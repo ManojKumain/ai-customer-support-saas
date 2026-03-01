@@ -1,6 +1,7 @@
 import Message from "../models/Message.js";
 import Conversation from "../models/Conversation.js";
 import generateReply from "../services/aiService.js";
+import { generateTitleFromText } from "../utils/generateTitle.js";
 
 const chatHandler = async (req, res) => {
   try {
@@ -53,19 +54,49 @@ const chatHandler = async (req, res) => {
 
     console.time("Gemini Response Time");
 
-    let reply;
+    let aiResult;
     try {
-      reply = await generateReply(history);
+      aiResult = await generateReply(history);
     } finally {
       console.timeEnd("Gemini Response Time");
     }
+
+    const { text: reply, usage } = aiResult;
+
+    console.log("Token Usage:", usage); // temporary inspection
+    console.log("USAGE OBJECT IN CONTROLLER:", usage);
 
     // 3️⃣ Save assistant reply
     await Message.create({
       conversation: conversation._id,
       role: "assistant",
       content: reply,
+      usage: {
+        promptTokens: usage.promptTokens,
+        outputTokens: usage.outputTokens,
+        totalTokens: usage.totalTokens,
+        thoughtsTokens: usage.thoughtsTokens,
+      },
     });
+
+    // 4️⃣ Auto-generate conversation title (only first time)
+    if (conversation.title === "New Chat") {
+      const newTitle = generateTitleFromText(message);
+      conversation.title = newTitle;
+      await conversation.save();
+    }
+
+    await Conversation.findByIdAndUpdate(
+      conversation._id,
+      {
+        $inc: {
+          "tokenUsage.totalTokens": usage.totalTokens,
+          "tokenUsage.promptTokens": usage.promptTokens,
+          "tokenUsage.outputTokens": usage.outputTokens,
+        },
+      }
+    );
+
 
     res.status(200).json({ reply, conversationId: conversation._id, });
 

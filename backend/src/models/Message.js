@@ -16,6 +16,12 @@ const messageSchema = new mongoose.Schema(
       ref: "Conversation",
       required: true,
     },
+    usage: {
+      promptTokens: { type: Number, default: 0 },
+      outputTokens: { type: Number, default: 0 },
+      totalTokens: { type: Number, default: 0 },
+      thoughtsTokens: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );

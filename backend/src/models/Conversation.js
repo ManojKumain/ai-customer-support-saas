@@ -15,6 +15,11 @@ const conversationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    tokenUsage: {
+      totalTokens: { type: Number, default: 0 },
+      promptTokens: { type: Number, default: 0 },
+      outputTokens: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );
